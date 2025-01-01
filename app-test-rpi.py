@@ -9,15 +9,15 @@ import time
 client = OpenAI(api_key='sk-NsA')
 
 # GPIO setup
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
-# Define GPIO pins for each room
+# Define GPIO pins for each room (using BOARD numbering)
 LED_PINS = {
-  "LIVING_ROOM": 17,
-  "KITCHEN": 27,
-  "BATHROOM": 22,
-  "BEDROOM": 23
+  "LIVING_ROOM": 11,  # GPIO 17 -> Pin 11
+  "KITCHEN": 13,      # GPIO 27 -> Pin 13
+  "BATHROOM": 15,     # GPIO 22 -> Pin 15
+  "BEDROOM": 16       # GPIO 23 -> Pin 16
 }
 
 # Setup GPIO pins as output
