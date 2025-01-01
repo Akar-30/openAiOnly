@@ -1,15 +1,12 @@
 from openai import OpenAI
-from dotenv import load_dotenv
+
 import os
 import base64
 import RPi.GPIO as GPIO
 import time
 
-# Load environment variables
-load_dotenv()
-
 # Initialize client with API key
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY2'))
+client = OpenAI(api_key='sk-NsA')
 
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
@@ -30,28 +27,39 @@ for pin in LED_PINS.values():
 
 # Function to control LEDs
 def control_led(command):
+  print(f"Received command: {command}")
   if command == "LIVING_ROOM_LIGHTS_ON":
     GPIO.output(LED_PINS["LIVING_ROOM"], GPIO.HIGH)
+    print('Turning on living room lights')
   elif command == "LIVING_ROOM_LIGHTS_OFF":
     GPIO.output(LED_PINS["LIVING_ROOM"], GPIO.LOW)
+    print('Turning off living room lights')
   elif command == "KITCHEN_LIGHTS_ON":
     GPIO.output(LED_PINS["KITCHEN"], GPIO.HIGH)
+    print('Turning on kitchen lights')
   elif command == "KITCHEN_LIGHTS_OFF":
     GPIO.output(LED_PINS["KITCHEN"], GPIO.LOW)
+    print('Turning off kitchen lights')
   elif command == "BATHROOM_LIGHTS_ON":
     GPIO.output(LED_PINS["BATHROOM"], GPIO.HIGH)
+    print('Turning on bathroom lights')
   elif command == "BATHROOM_LIGHTS_OFF":
     GPIO.output(LED_PINS["BATHROOM"], GPIO.LOW)
+    print('Turning off bathroom lights')
   elif command == "BEDROOM_LIGHTS_ON":
     GPIO.output(LED_PINS["BEDROOM"], GPIO.HIGH)
+    print('Turning on bedroom lights')
   elif command == "BEDROOM_LIGHTS_OFF":
     GPIO.output(LED_PINS["BEDROOM"], GPIO.LOW)
+    print('Turning off bedroom lights')
   elif command == "LIGHTS_ON":
     for pin in LED_PINS.values():
       GPIO.output(pin, GPIO.HIGH)
+    print('Turning on all lights')
   elif command == "LIGHTS_OFF":
     for pin in LED_PINS.values():
       GPIO.output(pin, GPIO.LOW)
+    print('Turning off all lights')
   else:
     print("Command not recognized or not able to perform.")
 
@@ -103,7 +111,7 @@ response = client.chat.completions.create(
 
 # Print the response content
 command = response.choices[0].message.content
-print(command)
+print(f"API response command: {command}")
 
 # Control the LEDs based on the command
 control_led(command)
