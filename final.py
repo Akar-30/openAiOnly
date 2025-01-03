@@ -5,6 +5,7 @@ import soundfile as sf
 import speech_recognition as sr
 import base64
 from openai import OpenAI
+from pydub import AudioSegment
 
 # Initialize GPIO and other components
 GPIO.setmode(GPIO.BCM)
@@ -29,27 +30,50 @@ recognizer = sr.Recognizer()
 
 
 # Initialize client with API key
-client = OpenAI(api_key='sk-1234567890abcdef1234567890abcdef')
+client = OpenAI(api_key='sk-NsA')
 
 
 # Define the wake words
 wake_words = ["sana", "ava", "sara", "hey", "hi", "suli", "sully", "siri"]
 
+# Function to control LEDs
 def control_led(command):
-    print(f"Command received: {command}")
-    if command in LED_PINS:
-        GPIO.output(LED_PINS[command], GPIO.HIGH if "ON" in command else GPIO.LOW)
-        print(f"{'Turning on' if 'ON' in command else 'Turning off'} {command.lower()}")
-    elif command == "LIGHTS_ON":
-        for pin in LED_PINS.values():
-            GPIO.output(pin, GPIO.HIGH)
-        print("Turning on all lights")
-    elif command == "LIGHTS_OFF":
-        for pin in LED_PINS.values():
-            GPIO.output(pin, GPIO.LOW)
-        print("Turning off all lights")
-    else:
-        print("Unrecognized command.")
+  print(f"Received command: {command}")
+  if command == "LIVING_ROOM_LIGHTS_ON":
+    GPIO.output(LED_PINS["LIVING_ROOM"], GPIO.HIGH)
+    print('Turning on living room lights')
+  elif command == "LIVING_ROOM_LIGHTS_OFF":
+    GPIO.output(LED_PINS["LIVING_ROOM"], GPIO.LOW)
+    print('Turning off living room lights')
+  elif command == "KITCHEN_LIGHTS_ON":
+    GPIO.output(LED_PINS["KITCHEN"], GPIO.HIGH)
+    print('Turning on kitchen lights')
+  elif command == "KITCHEN_LIGHTS_OFF":
+    GPIO.output(LED_PINS["KITCHEN"], GPIO.LOW)
+    print('Turning off kitchen lights')
+  elif command == "BATHROOM_LIGHTS_ON":
+    GPIO.output(LED_PINS["BATHROOM"], GPIO.HIGH)
+    print('Turning on bathroom lights')
+  elif command == "BATHROOM_LIGHTS_OFF":
+    GPIO.output(LED_PINS["BATHROOM"], GPIO.LOW)
+    print('Turning off bathroom lights')
+  elif command == "BEDROOM_LIGHTS_ON":
+    GPIO.output(LED_PINS["BEDROOM"], GPIO.HIGH)
+    print('Turning on bedroom lights')
+  elif command == "BEDROOM_LIGHTS_OFF":
+    GPIO.output(LED_PINS["BEDROOM"], GPIO.LOW)
+    print('Turning off bedroom lights')
+  elif command == "LIGHTS_ON":
+    for pin in LED_PINS.values():
+      GPIO.output(pin, GPIO.HIGH)
+    print('Turning on all lights')
+  elif command == "LIGHTS_OFF":
+    for pin in LED_PINS.values():
+      GPIO.output(pin, GPIO.LOW)
+    print('Turning off all lights')
+  else:
+    print("Command not recognized or not able to perform.")
+
 
 
 def save_audio(audio, filename):
@@ -131,9 +155,11 @@ def send_audio_to_api(filename):
       frequency_penalty=0,
       presence_penalty=0
     )
-
+    
     # Print the response content
-    print(response.choices[0].message.content)
+    parsed_response = response.choices[0].message.content
+    print(parsed_response)
+    return parsed_response
 
 if __name__ == "__main__":
     while True:
