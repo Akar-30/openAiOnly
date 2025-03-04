@@ -1,1 +1,4 @@
 .env
+/uploads
+output.mp3
+/assets
