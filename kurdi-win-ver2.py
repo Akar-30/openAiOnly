@@ -31,7 +31,7 @@ client = OpenAI(api_key=api_key)
 wake_words = ["sana", "ava", "sara", "hey", "hi", "suli", "sully", "siri", "slow", "sule", "suley", "sulley", "suli", "sul", "suley", "sule", "sulley", "suli", "sul", "suley", "sule", "sulley", "suli", "sul"]
 
 # Send the audio to the kurdish api
-def kurdish_transcribe_audio(api_key, audio_file, model="asr-large-beta", language="ckb", noise_remover=False):
+def kurdish_transcribe_audio(api_key, audio_file, language="ckb", noise_remover=False):
     """
     Transcribe speech from an audio file using the API.
     
@@ -53,7 +53,7 @@ def kurdish_transcribe_audio(api_key, audio_file, model="asr-large-beta", langua
     }
     
     data = {
-        'model': model,
+        'model': "asr-large-beta",
         'response_format': 'json',
         'noise_remover': str(noise_remover).lower(),
         'language': language
@@ -279,46 +279,117 @@ def listen_for_command():
     
 def withoutWakeWordProcess(history):
     while True:
+        # Initialize timing dictionary
+        method_times = {
+            "listen_for_command": 0,
+            "kurdish_resposnse_parsing": 0,
+            "send_text_to_anthropic": 0,
+            "control_led": 0,
+            "generate_speech": 0
+        }
+
+        # Start measuring time for listen_for_command
+        start_time = time.time()
         audio_file = listen_for_command()
+        method_times["listen_for_command"] = time.time() - start_time
+
         if audio_file:
+            # Measure time for kurdish_resposnse_parsing
+            start_time = time.time()
             kurdish_response = kurdish_resposnse_parsing(audio_file)
+            method_times["kurdish_resposnse_parsing"] = time.time() - start_time
+
+            # Measure time for send_text_to_anthropic
+            start_time = time.time()
             response = send_text_to_anthropic(api_key_claude, kurdish_response, history)
-            # response_text = response.text  # Extract the text attribute from the TextBlock object
-            command,  message = extract_values(response)
+            method_times["send_text_to_anthropic"] = time.time() - start_time
+
+            # Extract command and message
+            command, message = extract_values(response)
+
+            # Measure time for control_led
+            start_time = time.time()
             control_led(command)
-            # message = message[::-1]
-            print(f"message: {message}")
+            method_times["control_led"] = time.time() - start_time
+
+            # Measure time for generate_speech
+            start_time = time.time()
             try:
-                # Generate speech and save it to a file
                 generate_speech(message=message)
             except Exception as e:
                 print(f"Error: {e}")
+            method_times["generate_speech"] = time.time() - start_time
+
+            # Print timing results
+            print("Method execution times:")
+            for method, duration in method_times.items():
+                print(f"{method}: {duration:.4f} seconds")
+
+            # Identify the method that took the most time
+            max_time_method = max(method_times, key=method_times.get)
+            print(f"The method that took the most time: {max_time_method} ({method_times[max_time_method]:.4f} seconds)")
+
             last_instruction_time = time.time()
             break
         else:
             last_instruction_time = time.time() - 61
+
+        # Reset timing dictionary for the next iteration
+        method_times = {key: 0 for key in method_times}
+
     return last_instruction_time
     
 def wakeWordProcess(history):
     while True:
+        # Initialize timing dictionary
+        method_times = {
+            "listen_for_wake_word": 0,
+            "kurdish_resposnse_parsing": 0,
+            "send_text_to_anthropic": 0,
+            "control_led": 0,
+            "generate_speech": 0
+        }
+
+        # Start measuring time for listen_for_wake_word
+        start_time = time.time()
         audio_file = listen_for_wake_word()
+        method_times["listen_for_wake_word"] = time.time() - start_time
+
         if audio_file:
+            # Measure time for kurdish_resposnse_parsing
+            start_time = time.time()
             kurdish_response = kurdish_resposnse_parsing(audio_file)
-            response = send_text_to_anthropic(api_key_claude, kurdish_response,history)
-            # response_text = response.text  # Extract the text attribute from the TextBlock object
-            command,  message = extract_values(response)
+            method_times["kurdish_resposnse_parsing"] = time.time() - start_time
+
+            # Measure time for send_text_to_anthropic
+            start_time = time.time()
+            response = send_text_to_anthropic(api_key_claude, kurdish_response, history)
+            method_times["send_text_to_anthropic"] = time.time() - start_time
+
+            # Extract command and message
+            command, message = extract_values(response)
+
+            # Measure time for control_led
+            start_time = time.time()
             control_led(command)
-            # message = message[::-1]
-            print(f"message: {message}")
-        
+            method_times["control_led"] = time.time() - start_time
+
+            # Measure time for generate_speech
+            start_time = time.time()
             try:
-                # Generate speech and save it to a file
-                generate_speech(message=message) 
+                generate_speech(message=message)
             except Exception as e:
-                print(f"Error: {e}") 
-            last_instruction_time= time.time()
+                print(f"Error: {e}")
+            method_times["generate_speech"] = time.time() - start_time
+
+            # Print timing results
+            print("Method execution times:")
+            for method, duration in method_times.items():
+                print(f"{method}: {duration:.4f} seconds")
+
+            last_instruction_time = time.time()
             break
-    
+
     return last_instruction_time
             
 if __name__ == "__main__":
