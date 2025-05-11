@@ -145,7 +145,7 @@ def listen_for_wake_word():
             try:
                 # Recognize speech using Google Web Speech API
                 speech_text = recognizer.recognize_google(audio).lower()
-                print(f"Recognized: {speech_text}")
+                # print(f"Recognized: {speech_text}")
                 
                 # Check if any wake word is in the recognized speech
                 if any(word in speech_text for word in wake_words):

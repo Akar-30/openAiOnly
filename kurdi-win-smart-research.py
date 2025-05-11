@@ -5,6 +5,8 @@ import speech_recognition as sr
 from pydub import AudioSegment
 from dotenv import load_dotenv
 import anthropic
+import csv
+import time
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +18,13 @@ recognizer = sr.Recognizer()
 
 # Define wake words
 wake_words = ["sana", "ava", "sara", "hey", "hi", "suli", "sully", "siri"]
+
+# Initialize CSV file
+csv_file = "data_collection.csv"
+if not os.path.exists(csv_file):
+    with open(csv_file, mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["index", "transcribed-text", "duration-to-respond", "responded-command"])
 
 def save_audio(audio, filename):
     audio_data = audio.get_wav_data()
@@ -89,15 +98,50 @@ def control_led(command):
         print('Turning on all lights')
     elif command == "LIGHTS_OFF":
         print('Turning off all lights')
+    elif command == "LIVING_ROOM_LIGHTS_OFF":
+        print('Turning off lights in the living room')
+    elif command == "KITCHEN_LIGHTS_ON":
+        print('Turning on lights in the kitchen')
+    elif command == "BEDROOM_1_LIGHTS_ON":
+        print('Turning on lights in bedroom 1')
+    elif command == "BEDROOM_2_LIGHTS_OFF":
+        print('Turning off lights in bedroom 2')
+    elif command == "BATHROOM_LIGHTS_ON":
+        print('Turning on lights in the bathroom')
+    elif command == "GUEST_ROOM_LIGHTS_ON":
+        print('Turning on lights in the guest room')
+    elif command == "HOT_KITCHEN_LIGHTS_ON":
+        print('Turning on lights in the hot kitchen')
+    elif command == "COLD_KITCHEN_LIGHTS_OFF":
+        print('Turning off lights in the cold kitchen')
+    elif command == "DINING_ROOM_LIGHTS_ON":
+        print('Turning on lights in the dining room')
+    elif command == "LAUNDRY_ROOM_LIGHTS_OFF":
+        print('Turning off lights in the laundry room')
+    elif command == "GARAGE_LIGHTS_ON":
+        print('Turning on lights in the garage')
+    elif command == "UNCLEAR_INSTRUCTION":
+        print('The instruction is unclear')
+    elif command == "NOT_SMART_HOME_INSTRUCTION":
+        print('The command is not related to smart home instructions')
     else:
         print("Command not recognized or not able to perform.")
 
 if __name__ == "__main__":
+    index = 1
     while True:
         audio_file = listen_for_wake_word()
         if audio_file:
+            start_time = time.time()
             kurdish_response = kurdish_resposnse_parsing(audio_file)
             response = send_text_to_anthropic(api_key_claude, kurdish_response)
-            # command, message = extract_values(response)
-            control_led(response.text)
-            print(f"message: {response.text}")
+            command = response.text
+            duration = time.time() - start_time
+            control_led(command)
+            print(f"message: {command}")
+            # Save data to CSV
+            with open(csv_file, mode="a", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                writer.writerow([index, kurdish_response, duration, command])
+            
+            index += 1
